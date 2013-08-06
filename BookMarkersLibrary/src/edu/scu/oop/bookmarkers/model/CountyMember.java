@@ -1,6 +1,6 @@
-/**
- * 
- */
+package edu.scu.oop.bookmarkers.model;
+
+
 
 /**
  * @author vidyanadig

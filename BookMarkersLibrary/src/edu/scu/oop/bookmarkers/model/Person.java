@@ -1,3 +1,5 @@
+package edu.scu.oop.bookmarkers.model;
+
 /**
  * @author vidyanadig
  *
@@ -8,7 +10,7 @@ public class Person {
 	// Data members
 	private String personName;
 	private String emailId;
-	private String homeAddress;
+	private String homeAddress; // Just a city
 	private String phoneNum;
 	private String countyName;
 	

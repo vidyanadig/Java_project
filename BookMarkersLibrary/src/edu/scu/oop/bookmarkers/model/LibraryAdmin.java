@@ -1,3 +1,5 @@
+package edu.scu.oop.bookmarkers.model;
+
 import java.util.*;
 
 
@@ -8,7 +10,7 @@ import java.util.*;
 public final class LibraryAdmin extends Person {
 	private String username;
 	private String password;
-	private static final LibraryAdmin libAdmin = new LibraryAdmin();
+	private static LibraryAdmin libAdmin; 
 	
 	private LibraryAdmin () {
 		// Private constructor so that there is only 1 admin.
@@ -18,6 +20,9 @@ public final class LibraryAdmin extends Person {
 	}
 	
 	public static LibraryAdmin getAdminInstance () {
+		if (libAdmin == null) {
+			libAdmin = new LibraryAdmin();
+		}
 		return libAdmin;
 	}
 	

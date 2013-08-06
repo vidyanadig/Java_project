@@ -1,3 +1,5 @@
+package edu.scu.oop.bookmarkers.model;
+
 import java.util.Date;
 
 /**
@@ -6,7 +8,7 @@ import java.util.Date;
  */
 public abstract class LibraryMember extends Person {
 
-	private String membershipCardId;
+	private String membershipCardId; // String of 5 chars
 	private Date membershipStartDate;
 	protected Boolean areFinesPaid;
 	protected double fineAmount;
