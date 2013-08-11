@@ -38,7 +38,8 @@ public class DatabaseConnection {
 		return dbc;
 	}
 	
-	public void insertMemberIntoDatabse (String memID, boolean areFinesPaid, double fines) throws SQLException {
+	//Insert new library member into MemberDB.
+	public void insertMemberIntoDatabase (String memID, boolean areFinesPaid, double fines) throws SQLException {
         Statement stmt = dbc.con.createStatement();
 		String strInsert = "insert into memberDB values ('" + memID + "', CURRENT_DATE," + areFinesPaid + ", '" + fines + "')";
 		//TODO Remove the printf
@@ -48,7 +49,8 @@ public class DatabaseConnection {
 
 	}
 	
-	public void updateMemberIntoDatabse (String memID, boolean areFinesPaid, double fines) throws SQLException {
+	// Update MemberDB if all fines are paid
+	public void updateMemberIntoDatabase (String memID, boolean areFinesPaid, double fines) throws SQLException {
         Statement stmt = dbc.con.createStatement();
 		String strUpdate = "update memberDB set areFinesPaid = "+areFinesPaid + ", fineAmount = " + fines + " where membershipCardId = '" + memID + "'";
 		//TODO Remove the printf
@@ -57,14 +59,25 @@ public class DatabaseConnection {
         System.out.println("affected rows: " + rset);
 	}
 	
+	// Finds out whether the member ID is in the MemberDB to check if it is valid or not
+	public Boolean searchMemberDatabase (String memID) throws SQLException {
+        Statement stmt = dbc.con.createStatement();
+		String strUpdate = "select count(*) as total from memberDB where membershipCardID = '" + memID + "'";
+		//TODO Remove the printf
+		ResultSet rset = stmt.executeQuery(strUpdate);  
+		rset.next();
+		return (rset.getInt("total") > 0) ? Boolean.TRUE: Boolean.FALSE;
+	}
+	
 	/**
 	 * @param args
 	 * @throws SQLException 
 	 */
 	public static void main(String[] args) throws SQLException {
 		// TODO Auto-generated method stub
-		//DatabaseConnection.getInstance().insertMemberIntoDatabse("Go345", Boolean.FALSE, 10);
-		//DatabaseConnection.getInstance().updateMemberIntoDatabse("Go345", Boolean.TRUE, 0);
+		//DatabaseConnection.getInstance().insertMemberIntoDatabse("Er345", Boolean.FALSE, 10);
+		//DatabaseConnection.getInstance().updateMemberIntoDatabse("Er345", Boolean.TRUE, 0);
+		System.out.println("Is there a Er345 ?" + DatabaseConnection.getInstance().searchMemberDatabase("Hi1523"));
 
 	}
 
