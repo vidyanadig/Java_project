@@ -30,20 +30,22 @@ public final class LibraryAdmin extends Person {
 		return LibraryMember.numberOfMembers;
 	}
 	
-	public void findTotalNumberOfItemsInLibrary () {
-		//TODO return Items.numberOfItems;
+	public void findTotalNumberOfItemsInLibrary () {	
+		//TODO 
+		System.out.println("Fiction: "+ Fiction.numOfItems + "NonFiction: "+ NonFiction.numOfItems +
+				"Video: "+Video.numOfItems);
 	}
 	
-	public void findNumberOfItemsCheckedOut () {
-		//TODO return Library.numberOfItemsCheckedOut;
+	public int findNumberOfItemsCheckedOut () {
+		return Library.getInstance().totalNumOfItemsCheckedOut();
 	}
 	
-	public void findTitleOfBookCheckedoutMost () {
-		//TODO return Library.mostCheckedoutBook
+	public Items findTitleOfBookCheckedoutMost (int month) {
+		return Library.getInstance().mostCheckedOutBookInAMonth(month);
 	}
 	
 	public void findTotalFineCollected (Date fromDate, Date toDate ) {
-		//TODO Library.totalFineCollected (fromDate, toDate)
+		Library.getInstance().totalFinesCollectedByLibrary (fromDate, toDate);
 	}
 	
 }

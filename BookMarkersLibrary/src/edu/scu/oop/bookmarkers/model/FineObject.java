@@ -3,13 +3,14 @@
  */
 package edu.scu.oop.bookmarkers.model;
 
-import java.sql.Date;
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author vidyanadig
  *
  */
-public class FineObject {
+public class FineObject implements Serializable{
 	private String memberID; // Member who is paying the fine.
 	private Date dateOfPayment; // The date when member pays fines.
 	private double fine; // The fine amount itself
@@ -20,6 +21,7 @@ public class FineObject {
 		this.fine = fine;
 	}
 	
+
 	public String getMemberID () {
 		return this.memberID;
 	}
@@ -31,5 +33,6 @@ public class FineObject {
 	public double getFine () {
 		return this.fine;
 	}
+	
 }
 

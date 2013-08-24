@@ -1,9 +1,6 @@
 package edu.scu.oop.bookmarkers.model;
 
-import java.sql.SQLException;
 import java.util.Date;
-
-import edu.scu.oop.bookmarkers.db.DatabaseConnection;
 
 /**
  * @author vidyanadig
@@ -12,7 +9,7 @@ import edu.scu.oop.bookmarkers.db.DatabaseConnection;
 public abstract class LibraryMember extends Person {
 
 	private String membershipCardId; // String of 5 chars
-	private java.sql.Date membershipStartDate;
+	private Date membershipStartDate;
 	protected Boolean areFinesPaid;
 	protected double fineAmount;
 	public abstract double getMembershipFee ();
@@ -22,7 +19,7 @@ public abstract class LibraryMember extends Person {
 		super (name,  email,  address,  phoneNum,  county);
 		// John Doe (123-456-7890) will be Jo890
 		membershipCardId = (name.substring(0,2)).concat(phoneNum.substring(7));
-		membershipStartDate = Library.getTimeInSQLFormat(); // get the date in a format which is same as SQL date format
+		membershipStartDate = new Date(); 
 		areFinesPaid = Boolean.FALSE;
 		
 		numberOfMembers++;
@@ -44,22 +41,16 @@ public abstract class LibraryMember extends Person {
 		return fineAmount;
 	}
 	
-	public void checkoutBook () {
-		
+	public void setFineAmount (double fines) {
+		 this.fineAmount = fines;
+		 this.areFinesPaid = Boolean.FALSE;
 	}
 	
-	public void returnBook () {
-		
-	}
-	
-	public void retrieveTransaction () {
-		
-	}
-	
-	public void memberPaysFines () throws SQLException {
+	public void memberPaysFines () {
 		areFinesPaid = Boolean.TRUE;
 		fineAmount = 0;
-		DatabaseConnection.getInstance().updateMemberIntoDatabase(this);
 	}
+	
+	
 
 }
