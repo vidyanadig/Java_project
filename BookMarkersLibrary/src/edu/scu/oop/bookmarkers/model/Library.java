@@ -6,6 +6,7 @@ package edu.scu.oop.bookmarkers.model;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.Security;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,6 +20,11 @@ import javax.mail.*;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.Transport;
+import javax.mail.internet.*;
+import  javax.mail.Message;
+
+import com.sun.mail.smtp.SMTPTransport;
 
 import edu.scu.oop.bookmarkers.db.Serialization;
 
@@ -51,11 +57,11 @@ public class Library {
 
 	// Load from backend related functions
 	public void loadValuesFromDB () throws FileNotFoundException, ClassNotFoundException, IOException {
-		Serialization.loadMembersIntoHashMap(libraryMembers);
+		libraryMembers = Serialization.loadMembersIntoHashMap();
 		System.out.print("Loaded Members from file");
-		Serialization.loadFinesFromFinesFile(fineList);
+		fineList = Serialization.loadFinesFromFinesFile();
 		System.out.print("Loaded fines from DB");
-		Serialization.loadTransactionIntoHashMap(transactionMap);
+		transactionMap = Serialization.loadTransactionIntoHashMap();
 		System.out.print("Loaded transactions from file");
 
 	}
@@ -103,6 +109,7 @@ public class Library {
 			// TODO, raise exception
 			System.out.println("Previous same memID found, not adding !!");
 		}
+		System.out.println("Yay, added " + name);
 	}
 
 	/*
@@ -168,21 +175,42 @@ public class Library {
 		transactionMap.get(memID).add(new Transaction(memID, itemID));
 	}
 	
-	private void sendEmail (String emailID) throws UnsupportedEncodingException {
+	private void sendEmail (String emailID, String itemTitle) throws UnsupportedEncodingException {
+		//1. Set some properties
+		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+        final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
+
 		Properties props = new Properties();
-        Session session = Session.getDefaultInstance(props, null);
+		props.setProperty("mail.smtps.host", "smtp.gmail.com");
+        props.setProperty("mail.smtp.socketFactory.class", SSL_FACTORY);
+        props.setProperty("mail.smtp.socketFactory.fallback", "false");
+        props.setProperty("mail.smtp.port", "465");
+        props.setProperty("mail.smtp.socketFactory.port", "465");
+        props.setProperty("mail.smtps.auth", "true");
 
-        String msgBody = "Book available!";
+        Session session = Session.getInstance(props, null);
 
+        props.put("mail.smtps.quitwait", "false");
+        
+        //2. Set the msg body
+        String msgBody = "The book you reserved " + itemTitle + " is available! Please stop by.";
+        
+        //3. Create a new message
         try {
             Message msg = new MimeMessage(session);
-            msg.setFrom(new InternetAddress("admin@bookmarkers.com", "bookmarkers.com Admin"));
-            msg.addRecipient(Message.RecipientType.TO,
-                             new InternetAddress(emailID, "Library Member"));
-            msg.setSubject("Your Book is available");
+            //msg.setFrom(new InternetAddress("mailnadig@gmail.com"));
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(emailID, false));
+            msg.setSubject("Your Book is available at Bookmarkers!");
             msg.setText(msgBody);
-            Transport.send(msg);
+            msg.setSentDate(new Date());
+            
+            System.out.println("Sending email !! This might take a while");
 
+            SMTPTransport t = (SMTPTransport)session.getTransport("smtps");
+            //4. Send out email
+            t.connect("smtp.gmail.com", "coen275java@gmail.com", "exceptions");
+            t.sendMessage(msg, msg.getAllRecipients());      
+            t.close();
         } catch (AddressException e) {
             // ...
         } catch (MessagingException e) {
@@ -239,7 +267,7 @@ public class Library {
 							case CHECKEDOUTANDRESERVED:
 								i.setItemState(ItemStates.RESERVED);
 								// Send an email to the person who had reserved this book.
-								sendEmail(libraryMembers.get(i.getItemReservedBy()).getEmailId());
+								sendEmail(libraryMembers.get(i.getItemReservedBy()).getEmailId(), i.getItemTitle());
 								break;
 							default:
 								// We should not come here at all
@@ -391,11 +419,29 @@ public class Library {
 
 	/**
 	 * @param args
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
+	 * @throws FileNotFoundException 
 	 * @throws SQLException 
 	 */
-	public static void main(String[] args)  {
+	public static void main(String[] args) throws FileNotFoundException, ClassNotFoundException, IOException  {
 		// TODO Auto-generated method stub
-		Library.getInstance().newLibraryMemberRegistration("John Doe", "jdoe@gmail.com", "Sunnyvale", "2222222222", "Santa Clara");
+		Library.getInstance().loadValuesFromDB();
+		/*Library.getInstance().newLibraryMemberRegistration("Richard Parker", "richard@gmail.com", "Ottawa", "2323232323", "Santa Clara");
+		Library.getInstance().newLibraryMemberRegistration("Jack Sparrow", "jack@gmail.com", "MountainView", "2121212121", "Springfield");
+		Library.getInstance().newLibraryMemberRegistration("Katie Holmes", "katie@gmail.com", "Orange County", "1212121212", "Santa Clara");
+		Library.getInstance().newLibraryMemberRegistration("Wu Chen", "chen@gmail.com", "RedwoodCity", "3434343434", "Springfield");
+				
+		Library.getInstance().newLibraryMemberRegistration("Deepika Gopal", "deepika@gmail.com", "San Jose", "4545454545", "SpringField");
+		Library.getInstance().newLibraryMemberRegistration("Kim Jong", "kim@gmail.com", "San Jose", "5454545454", "Palo Alto");
+		Library.getInstance().newLibraryMemberRegistration("Akshay Kumar", "akshay@gmail.com", "Orange County", "6767676767", "Santa Clara");
+		Library.getInstance().newLibraryMemberRegistration("Priyanka Chopra", "chopra@gmail.com", "New Delhi", "7676767676", "Springfield");
+	   */
+		//Library.getInstance().finesPaidByLibraryMember("Wu434", 10.5);
+		
+ 		Library.getInstance().writeValuesToDB();
+
+
 	}
 
 }

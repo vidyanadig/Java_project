@@ -25,7 +25,7 @@ public class Serialization implements Serializable  {
 	private static String storeLibMemObj = "libmembers.ser";
 	
 	//Load all members into LibraryMembers hash map
-	public static void loadMembersIntoHashMap (Map <String, LibraryMember> m) 
+	public static Map <String, LibraryMember> loadMembersIntoHashMap () 
 			throws IOException, FileNotFoundException, ClassNotFoundException {
 		
 		ObjectInputStream in;
@@ -34,9 +34,10 @@ public class Serialization implements Serializable  {
 		in = new ObjectInputStream(new FileInputStream(storeLibMemObj));
 
 		// File is present, lets read objects from it
-		m = (Map <String, LibraryMember>)in.readObject();
+		Map <String, LibraryMember> m = (Map <String, LibraryMember>)in.readObject();
 
 		in.close();
+		return m;
 	}
 
 	//Write all members from LibraryMembers hash map to file
@@ -54,7 +55,7 @@ public class Serialization implements Serializable  {
 	}
 
 	//Load all fines from Fines List
-	public static void loadFinesFromFinesFile (List<FineObject> l) 
+	public static List<FineObject> loadFinesFromFinesFile () 
 			throws IOException, FileNotFoundException, ClassNotFoundException {
 		ObjectInputStream in;
 
@@ -62,9 +63,10 @@ public class Serialization implements Serializable  {
 		in = new ObjectInputStream(new FileInputStream(storeFinesObj));
 
 		// File is present, lets read the list from it
-		l = (List<FineObject>)in.readObject();
+		List<FineObject> l = (List<FineObject>)in.readObject();
 		
 		in.close();
+		return l;
 	}
 			
 		
@@ -84,7 +86,7 @@ public class Serialization implements Serializable  {
 	}
 	
 	//Load all transactions into transaction list
-		public static void loadTransactionIntoHashMap (Map<String, List<Transaction>> transactionMap) 
+		public static Map<String, List<Transaction>> loadTransactionIntoHashMap () 
 				throws IOException, FileNotFoundException, ClassNotFoundException {
 			
 			ObjectInputStream in;
@@ -93,9 +95,10 @@ public class Serialization implements Serializable  {
 			in = new ObjectInputStream(new FileInputStream(storeTransationObj));
 
 			// File is present, lets read objects from it
-			transactionMap = (Map<String, List<Transaction>>)in.readObject();
+			Map<String, List<Transaction>> transactionMap = (Map<String, List<Transaction>>)in.readObject();
 
 			in.close();
+			return transactionMap;
 		}
 
 		//Write all transactions from hash map to file

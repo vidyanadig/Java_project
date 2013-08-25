@@ -3,11 +3,13 @@
  */
 package edu.scu.oop.bookmarkers.model;
 
+import java.io.Serializable;
+
 /**
  * @author vidyanadig
  *
  */
-public abstract class Items {
+public abstract class Items implements Serializable{
 	String itemID;
 	String title;
 	String author;

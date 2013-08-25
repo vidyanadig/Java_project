@@ -1,11 +1,13 @@
 package edu.scu.oop.bookmarkers.model;
 
+import java.io.Serializable;
+
 /**
  * @author vidyanadig
  *
  */
 
-public class Person {
+public class Person implements Serializable{
 
 	// Data members
 	private String personName;

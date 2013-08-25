@@ -3,13 +3,14 @@
  */
 package edu.scu.oop.bookmarkers.model;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 /**
  * @author vidyanadig
  *
  */
-public class Transaction {
+public class Transaction implements Serializable{
 	private int transID;
 	private String memID;
 	private Date borrowDate;

@@ -1,12 +1,13 @@
 package edu.scu.oop.bookmarkers.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @author vidyanadig
  *
  */
-public abstract class LibraryMember extends Person {
+public abstract class LibraryMember extends Person implements Serializable{
 
 	private String membershipCardId; // String of 5 chars
 	private Date membershipStartDate;
