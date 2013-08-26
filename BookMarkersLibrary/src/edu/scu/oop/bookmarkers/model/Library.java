@@ -16,17 +16,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.mail.*;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.Transport;
-import javax.mail.internet.*;
-import  javax.mail.Message;
 
 import com.sun.mail.smtp.SMTPTransport;
 
 import edu.scu.oop.bookmarkers.db.Serialization;
+import edu.scu.oop.bookmarkers.gui.LibraryGUI;
 
 
 /**
@@ -38,7 +38,7 @@ public class Library {
 	private Map<String, LibraryMember> libraryMembers;
 	private List<FineObject> fineList;
 	private Map<String, List<Transaction>> transactionMap;
-	private Map<String, Items> itemsMap;
+	private Map<String, Item> itemsMap;
 	
 	
 	public static String countyName = "Springfield";
@@ -63,6 +63,9 @@ public class Library {
 		System.out.print("Loaded fines from DB");
 		transactionMap = Serialization.loadTransactionIntoHashMap();
 		System.out.print("Loaded transactions from file");
+		itemsMap = Serialization.loadItemsIntoHashMap() ;
+		System.out.print("Loaded items from file");
+
 
 	}
 
@@ -74,10 +77,16 @@ public class Library {
 		System.out.print("Wrote Members into file");
 		Serialization.writeTransactionFromHashMapIntoFile(transactionMap);
 		System.out.print("Wrote transactions into file");
+		Serialization.writeItemsIntoFile(itemsMap);
+		System.out.print("Wrote items into file");
 	}
 
 	public LibraryMember getLibraryMemberIfPresent (String memId) {
 		return (libraryMembers.get(memId));
+	}
+	
+	public Item getItemIfPresent (String ItemID) {
+		return (itemsMap.get(ItemID));
 	}
 	
 	/* 
@@ -86,7 +95,7 @@ public class Library {
 	 * to add the member into the backend database. If that succeeds , we add the member to our Hash map
 	 * which is stored in memory. So whenever a user registers, we add in the database + in the hash map.
 	 */
-	public void newLibraryMemberRegistration (String name, String email, String address, String phoneNum, String county) 
+	public LibraryMember newLibraryMemberRegistration (String name, String email, String address, String phoneNum, String county) 
 	{
 		LibraryMember l;
 		if (county == countyName) {
@@ -110,8 +119,38 @@ public class Library {
 			System.out.println("Previous same memID found, not adding !!");
 		}
 		System.out.println("Yay, added " + name);
+		return l;
 	}
 
+	// For Lib admin to add new items
+	public void newLibraryItemRegistration (String title, String author, double price, String type) 
+	{
+		Item i;
+		if (type == "F") {
+			i = new Fiction(title, author, price);
+		} else if (type == "NF" ) {
+			i = new NonFiction(title, author, price);
+		} else { //if (type == "V") {
+			i = new Video (title, author, price);
+		}
+		// If this is the first Item in this Library
+		if (itemsMap == null) {
+			itemsMap = new HashMap<String, Item> ();
+		}
+		/*
+		 * Add the item to the hash map with the itemID as the key if there 
+		 * was no previous item with the same key
+		 */
+		
+		if (!itemsMap.containsKey(i.getItemID())) {
+			itemsMap.put(i.getItemID(), i);
+		} else {
+			// TODO, raise exception
+			System.out.println("Previous same itemID found, not adding !!");
+		}
+		System.out.println("Yay, added " + title);
+	}
+	
 	/*
 	 * This method is called for every item which the user checks out.
 	 * If the user checks out 5 items, then this method is called 5 times.
@@ -124,7 +163,7 @@ public class Library {
 			return;
 		}
 
-		Items i = itemsMap.get(itemID);
+		Item i = itemsMap.get(itemID);
 		if (i == null) {
 			// Item does not exist in database. Return error.
 			System.out.println("ItemID not found !!");
@@ -245,7 +284,7 @@ public class Library {
 						 * Check if we need to pay any fine for this item
 						 * TODO: add items hashmap
 						 */
-						Items i = itemsMap.get(itemID);
+						Item i = itemsMap.get(itemID);
 						if (i.getMaxTimeToHoldInSeconds() < (t.getItemHoldTimeInSeconds())) {
 							/*
 							 * We have exceeded our borrow time limit. 
@@ -288,7 +327,7 @@ public class Library {
 	 * Called when a user pays his/her fines. Add an entry to the FinesDB and update the List which is held
 	 * in memory.
 	 */
-	public void finesPaidByLibraryMember (String memId, double finePaid) {
+	public boolean finesPaidByLibraryMember (String memId, double finePaid) {
 		LibraryMember l = getLibraryMemberIfPresent(memId);
 		if (l != null) {
 			FineObject f = new FineObject(memId, new Date(), finePaid);
@@ -297,8 +336,25 @@ public class Library {
 			}
 			fineList.add(f);
 			l.memberPaysFines();
+			return true;
 		} else {
 			System.out.println("No user found in database ! ");
+			return false;
+		}
+
+	}
+	
+	/*
+	 * Called when a user pays his/her fines. Add an entry to the FinesDB and update the List which is held
+	 * in memory.
+	 */
+	public double lookupFinesForLibraryMember (String memId) {
+		LibraryMember l = getLibraryMemberIfPresent(memId);
+		if (l != null) {
+			return l.getFineAmount();
+		} else {
+			System.out.println("No user found in database ! ");
+			return -1;
 		}
 
 	}
@@ -320,7 +376,7 @@ public class Library {
 
 	public int totalNumOfItemsCheckedOut () {
 		int checkedOutCount = 0;
-		for (Items item : itemsMap.values()) {
+		for (Item item : itemsMap.values()) {
 		    if (item.getItemState() == ItemStates.CHECKEDOUT) {
 		    	checkedOutCount++;
 		    }
@@ -328,7 +384,7 @@ public class Library {
 		return checkedOutCount;
 	}
 	
-	public Items mostCheckedOutBookInAMonth (int month) {
+	public Item mostCheckedOutBookInAMonth (int month) {
 		//Iterator of list of transactions. This will just give a iter or all the transaction lists.
 		Iterator<List<Transaction>> oldCheckoutTransactionIter = transactionMap.values().iterator();
 		Iterator<Transaction> transIter;
@@ -369,18 +425,24 @@ public class Library {
 	}
 	
 	// Called when a person queries for an Item
-	public List<Items> queryIfItemAvailable (String searchStr) {
-		Iterator<Items> listOfItemsPresent = itemsMap.values().iterator();
-		List <Items> listOfItemsFromSearchResult = new ArrayList <Items>();
-		while (listOfItemsPresent.hasNext()) {
-			Items itemObj = listOfItemsPresent.next();
-			// If searchStr is a part of the itemID or the item title, add to the list 
-			if (itemObj.getItemID().contains(searchStr) || itemObj.getItemTitle().contains(searchStr)) {				
-				//List all items avail/not avail .. no if (itemObj.getItemState() == ItemStates.AVAILABLE)
-				listOfItemsFromSearchResult.add(itemObj);
+	public List<Item> queryIfItemAvailable (String searchStr) {
+		if (itemsMap != null) {
+			Iterator<Item> listOfItemsPresent = itemsMap.values().iterator();
+			List <Item> listOfItemsFromSearchResult = new ArrayList <Item>();
+			while (listOfItemsPresent.hasNext()) {
+				Item itemObj = listOfItemsPresent.next();
+				// If searchStr is a part of the itemID or the item title, add to the list 
+				if (itemObj.getItemID().toLowerCase().contains(searchStr.toLowerCase()) || 
+						itemObj.getItemTitle().toLowerCase().contains(searchStr.toLowerCase())) {				
+					//List all items avail/not avail .. no if (itemObj.getItemState() == ItemStates.AVAILABLE)
+					listOfItemsFromSearchResult.add(itemObj);
+				}
 			}
-		}
-		return listOfItemsFromSearchResult;
+			return listOfItemsFromSearchResult;
+		} 
+		System.out.println("returning NULL, should not happen");
+		return null;
+		
 	}
 	
 	public void reserveItem (String itemId, String memID) {
@@ -389,7 +451,7 @@ public class Library {
 			 * If we have the item in our database 
 			 * (we should be having it already, else we won't come here)
 			 */
-			Items i = itemsMap.get(itemId);
+			Item i = itemsMap.get(itemId);
 			/*
 			 *  We can reserve Item only if it was checkedout.
 			 *  If it was reserved already, we cannot reserve again.
@@ -423,10 +485,24 @@ public class Library {
 	 * @throws ClassNotFoundException 
 	 * @throws FileNotFoundException 
 	 * @throws SQLException 
-	 */
+	 
 	public static void main(String[] args) throws FileNotFoundException, ClassNotFoundException, IOException  {
 		// TODO Auto-generated method stub
-		Library.getInstance().loadValuesFromDB();
+		 This is for advertisement
+		 * Thread libService = new Thread() {
+		    public void run() {
+		    }
+		};
+		libService.start();
+
+		// Load our stored values into internal datastructures.
+		//Library.getInstance().loadValuesFromDB();
+
+		//Start our GUI window
+		//new LibraryGUI();
+		
+
+
 		/*Library.getInstance().newLibraryMemberRegistration("Richard Parker", "richard@gmail.com", "Ottawa", "2323232323", "Santa Clara");
 		Library.getInstance().newLibraryMemberRegistration("Jack Sparrow", "jack@gmail.com", "MountainView", "2121212121", "Springfield");
 		Library.getInstance().newLibraryMemberRegistration("Katie Holmes", "katie@gmail.com", "Orange County", "1212121212", "Santa Clara");
@@ -436,12 +512,34 @@ public class Library {
 		Library.getInstance().newLibraryMemberRegistration("Kim Jong", "kim@gmail.com", "San Jose", "5454545454", "Palo Alto");
 		Library.getInstance().newLibraryMemberRegistration("Akshay Kumar", "akshay@gmail.com", "Orange County", "6767676767", "Santa Clara");
 		Library.getInstance().newLibraryMemberRegistration("Priyanka Chopra", "chopra@gmail.com", "New Delhi", "7676767676", "Springfield");
-	   */
-		//Library.getInstance().finesPaidByLibraryMember("Wu434", 10.5);
-		
+		Library.getInstance().newLibraryMemberRegistration("Hermoine Granger", "hermoine@gmail.com", "Orange County", "8787878787", "Santa Clara");
+
+	   
+		Library.getInstance().finesPaidByLibraryMember("Wu434", 10.5);
+		Library.getInstance().finesPaidByLibraryMember("Pr676", 4);
+		Library.getInstance().finesPaidByLibraryMember("Ka212", 10);
+		Library.getInstance().finesPaidByLibraryMember("Wu434", 12.5);
+
+			Library.getInstance().newLibraryItemRegistration("Kite Runner", "Khaled Hosseni", 20, "V"); 
+			Library.getInstance().newLibraryItemRegistration("State machines", "Ulman", 35.5, "NF"); 
+			Library.getInstance().newLibraryItemRegistration("Diary of a wimpy kid", "Jeff Kinney", 8.37, "F"); 
+			Library.getInstance().newLibraryItemRegistration("Boy on the wooden box", "Leon Leson", 12.23, "F"); 
+			Library.getInstance().newLibraryItemRegistration("Harry Potter and the philosophers stone", "JK Rowling", 25, "F"); 
+			Library.getInstance().newLibraryItemRegistration("Harry Potter and the prisoner of Askaban", "JK Rowling", 25, "F"); 
+			Library.getInstance().newLibraryItemRegistration("Harry Potter and the half-blood prince", "JK Rowling", 25, "F"); 
+			Library.getInstance().newLibraryItemRegistration("Harry Potter and the order of Phoenix", "JK Rowling", 25, "F"); 
+			Library.getInstance().newLibraryItemRegistration("Harry Potter and the chamber of secrets", "JK Rowling", 2.5, "V"); 
+			Library.getInstance().newLibraryItemRegistration("Harry Potter and the goblet of fire", "JK Rowling", 3.5, "V"); 
+
+			Library.getInstance().newLibraryItemRegistration("NatGeo: Penguins", "Nat Geo", 30.5, "NF");
+			Library.getInstance().newLibraryItemRegistration("NatGeo: Sea Turtles", "Nat Geo", 30.5, "NF");
+			Library.getInstance().newLibraryItemRegistration("NatGeo: Elephants", "Nat Geo", 40.5, "NF");
+
+		// Save our internal datastructures into storage .
  		Library.getInstance().writeValuesToDB();
+ 		
 
 
-	}
+	}*/
 
 }

@@ -40,7 +40,7 @@ public final class LibraryAdmin extends Person {
 		return Library.getInstance().totalNumOfItemsCheckedOut();
 	}
 	
-	public Items findTitleOfBookCheckedoutMost (int month) {
+	public Item findTitleOfBookCheckedoutMost (int month) {
 		return Library.getInstance().mostCheckedOutBookInAMonth(month);
 	}
 	

@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.scu.oop.bookmarkers.model.Books;
 import edu.scu.oop.bookmarkers.model.FineObject;
+import edu.scu.oop.bookmarkers.model.Item;
 import edu.scu.oop.bookmarkers.model.LibraryMember;
 import edu.scu.oop.bookmarkers.model.Transaction;
 
@@ -23,6 +25,8 @@ public class Serialization implements Serializable  {
 	private static String storeFinesObj = "fines.ser";
 	private static String storeTransationObj = "transactions.ser" ;
 	private static String storeLibMemObj = "libmembers.ser";
+	private static String storeItemsObj = "items.ser";
+
 	
 	//Load all members into LibraryMembers hash map
 	public static Map <String, LibraryMember> loadMembersIntoHashMap () 
@@ -54,6 +58,35 @@ public class Serialization implements Serializable  {
 		out.close();
 	}
 
+	public static Map <String, Item> loadItemsIntoHashMap () throws FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectInputStream in;
+		
+		// Try to open the inputstream and see if the file is present.
+		in = new ObjectInputStream(new FileInputStream(storeItemsObj));
+
+		// File is present, lets read objects from it
+		Map <String, Item> m = (Map <String, Item>)in.readObject();
+
+		in.close();
+		return m;
+		
+	}
+	
+	public static void writeItemsIntoFile (Map <String, Item> m) 
+			throws FileNotFoundException, IOException, ClassNotFoundException {
+		ObjectOutputStream out;
+		
+		// Try to open the outputstream and see if the file is present.
+		out = new ObjectOutputStream(new FileOutputStream(storeItemsObj));
+
+		// File is present, lets read objects from it
+		out.writeObject(m);
+		out.flush();
+		out.close();
+		
+	}
+	
+	
 	//Load all fines from Fines List
 	public static List<FineObject> loadFinesFromFinesFile () 
 			throws IOException, FileNotFoundException, ClassNotFoundException {
