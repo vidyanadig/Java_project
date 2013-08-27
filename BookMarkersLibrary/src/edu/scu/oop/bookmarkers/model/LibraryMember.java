@@ -43,7 +43,7 @@ public abstract class LibraryMember extends Person implements Serializable{
 	}
 	
 	public void setFineAmount (double fines) {
-		 this.fineAmount = fines;
+		 this.fineAmount += fines;
 		 this.areFinesPaid = Boolean.FALSE;
 	}
 	

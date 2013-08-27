@@ -9,9 +9,7 @@ public abstract class Books extends Item {
 		return 2*30; //Books can be checkedout for 2 weeks, here 1 week = 30 sec
 	}
 
-	public String getItemType() {
-		return "Book";
-	}
+
 
 	
 }

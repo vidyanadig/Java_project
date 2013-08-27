@@ -14,6 +14,8 @@ public final class NonFiction extends Books {
 		}
 
 		
-		
+		public String getItemType() {
+			return "NonFiction";
+		}
 		
 }

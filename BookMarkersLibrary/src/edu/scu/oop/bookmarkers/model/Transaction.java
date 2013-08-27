@@ -24,6 +24,7 @@ public class Transaction implements Serializable{
 		this.memID = memID;
 		this.borrowDate = new Date();
 		this.itemID = itemID;
+		this.returnDate = null;
 	}
 	
 	public void setReturnDate () {
@@ -40,6 +41,10 @@ public class Transaction implements Serializable{
 	
 	public Date getBorrowDate () {
 		return borrowDate;
+	}
+	
+	public int getTransID () {
+		return transID;
 	}
 	
 	public int getBorrowMonth () {

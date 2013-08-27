@@ -65,8 +65,6 @@ public class Library {
 		System.out.print("Loaded transactions from file");
 		itemsMap = Serialization.loadItemsIntoHashMap() ;
 		System.out.print("Loaded items from file");
-
-
 	}
 
 	// Write to backend related functions
@@ -155,40 +153,19 @@ public class Library {
 	 * This method is called for every item which the user checks out.
 	 * If the user checks out 5 items, then this method is called 5 times.
 	 */
-	public void newCheckoutTransactionByMember (String memID, String itemID) {
+	public int newCheckoutTransactionByMember (String memID, String itemID) {
 		// First, check if this memID is valid and no fines pending
 		LibraryMember l = getLibraryMemberIfPresent(memID) ;
 		if (l == null || l.hasMemberPaidFines() == Boolean.FALSE) {
 			System.out.println("MemID not found, invalid transaction or no fines paid!!");
-			return;
+			return -1;
 		}
 
 		Item i = itemsMap.get(itemID);
 		if (i == null) {
 			// Item does not exist in database. Return error.
 			System.out.println("ItemID not found !!");
-			return;
-		}
-		
-		switch (i.getItemState()) {
-		case AVAILABLE:
-			i.setItemState(ItemStates.CHECKEDOUT);
-			break;
-		case RESERVED:
-			if (i.getItemReservedBy() == memID) {
-				//This person has reserved the item. Let him check it out.
-				i.setItemState(ItemStates.CHECKEDOUT);
-				i.setItemReservedBy(null);
-			} else {
-				//Return error. TODO
-				System.out.println("This person has not reserved this item, someone else has");
-				return;
-			}
-			break;
-		default:
-			// TODO
-			System.out.println("Should not be here at all, Check what is happening");
-			return;
+			return -2;
 		}
 		
 		/*
@@ -207,11 +184,77 @@ public class Library {
 			transactionMap.put(memID, new ArrayList<Transaction>());
 		}
 		
+		if (transactionMap != null) {
+			int numFict = 0 , numNonFict = 0 , numVideo = 0;
+			// Find from transaction Map if user has borrowed 
+			Iterator<Transaction> oldCheckoutTransactionList = transactionMap.get(memID).iterator();
+			while (oldCheckoutTransactionList.hasNext()) {
+				Transaction t = oldCheckoutTransactionList.next();
+				// For all unreturned Items. Check what type they are. 
+				if (t.getReturnDate() == null) {
+					// This means this is a borrowed item still. Not yet returned. 
+					Item checkItem = (itemsMap.get(t.getItemID()));
+
+					// We now compare if it is a fiction/nonfiction/video
+					if(checkItem.getItemType() == "Fiction") {
+						numFict++; // Max is 3
+						if (i.getItemType() == "Fiction") {
+							if (numFict == 3) {
+								// Cannot borrow this book.
+								return -5;
+							}
+						}
+					} else if (checkItem.getItemType() == "NonFiction") {
+						numNonFict++; //Max is 2.
+						if (i.getItemType() == "NonFiction") {
+							if (numNonFict == 2) {
+								// Cannot borrow this book.
+								return -5;
+							}
+						}
+					} else if (checkItem.getItemType() == "Video") {
+						numVideo++; // Max is 2
+						if (i.getItemType() == "Video") {
+							if (numVideo == 2) {
+								// Cannot borrow this book.
+								return -5;
+							}
+						}
+					}
+				}
+			}
+
+		}
+		
+		switch (i.getItemState()) {
+		case AVAILABLE:
+			i.setItemState(ItemStates.CHECKEDOUT);
+			break;
+		case RESERVED:
+			if (i.getItemReservedBy() == memID) {
+				//This person has reserved the item. Let him check it out.
+				i.setItemState(ItemStates.CHECKEDOUT);
+				i.setItemReservedBy(null);
+			} else {
+				//Return error. TODO
+				System.out.println("This person has not reserved this item, someone else has");
+				return -3;
+			}
+			break;
+		default:
+			// TODO
+			System.out.println("Should not be here at all, Check what is happening");
+			return -4;
+		}
+		
+		
+		
 		/*
 		 * Finally, add the transaction object to the corresponding 
 		 * transaction list for this memID.
 		 */
 		transactionMap.get(memID).add(new Transaction(memID, itemID));
+		return 1;
 	}
 	
 	private void sendEmail (String emailID, String itemTitle) throws UnsupportedEncodingException {
@@ -260,12 +303,12 @@ public class Library {
 	/*
 	 * Called when a user scans an Item to return
 	 */
-	public void newReturnTransactionByMember (String memID, String itemID) throws UnsupportedEncodingException {
+	public int newReturnTransactionByMember (String memID, String itemID) throws UnsupportedEncodingException {
 		// First, check if this memID is valid
 		LibraryMember l = getLibraryMemberIfPresent(memID);
-		if (l == null) {
-			System.out.println("MemID not found, invalid transaction !!");
-			return;
+		if (l == null || !itemsMap.containsKey(itemID)) {
+			System.out.println("MemID/ItemID not found, invalid transaction !!");
+			return -1; // MemID/ItemID not valid
 		}
 
 		if (transactionMap != null) {
@@ -273,7 +316,8 @@ public class Library {
 				Iterator<Transaction> oldCheckoutTransactionList = transactionMap.get(memID).iterator();
 				while(oldCheckoutTransactionList.hasNext()) {
 					Transaction t = oldCheckoutTransactionList.next();
-					if (t.getReturnDate() == null && t.getItemID() == itemID) {
+					if ((t.getReturnDate() == null) && (t.getItemID().equals(itemID))) {
+						System.out.println("We found one itemid, so transaction map is ok ");
 						/* 
 						 * We have found the checkout transaction. 
 						 * Set its return date to current date.
@@ -302,24 +346,30 @@ public class Library {
 						switch (i.getItemState()) {
 							case CHECKEDOUT:
 								i.setItemState(ItemStates.AVAILABLE);
-								break;
+								return 0;
 							case CHECKEDOUTANDRESERVED:
 								i.setItemState(ItemStates.RESERVED);
 								// Send an email to the person who had reserved this book.
 								sendEmail(libraryMembers.get(i.getItemReservedBy()).getEmailId(), i.getItemTitle());
-								break;
+								return 0;
 							default:
 								// We should not come here at all
 								i.setItemState(ItemStates.AVAILABLE);
 								System.out.println("Something wrong here in return !!");
-								break;			
+								return 0;			
 						}
-						
-						break;
-					}
-				}
+					} else {
+						System.out.println("Itemid date " + t.getItemID() + t.getReturnDate() + itemID);
 
+					}
+				} 
+				return -3; // Had you borrowed this item at all?
+
+			} else {
+				return -2; // No item borrowed at all by this member
 			}
+		} else {
+			return -2;
 		}
 	}
 	

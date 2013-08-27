@@ -12,6 +12,10 @@ public final class Fiction extends Books {
 	public double getFinePerSecond () {
 		return finePerSecond;
 	}
+	
+	public String getItemType() {
+		return "Fiction";
+	}
 
 	
 }

@@ -25,11 +25,13 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import javax.swing.*;
 
 import edu.scu.oop.bookmarkers.model.Library;
+import javax.swing.table.DefaultTableModel;
 
 public class LibraryGUI {
 
@@ -46,6 +48,8 @@ public class LibraryGUI {
 	private JTextField needToPayText;
 	private SearchResultsItemsTable table;
 	private JTextField memIDForCheckoutReserve;
+	private QueryTransactionTable queryResults;
+	private JTextField memIDTextwhileReturning;
 
 	
 	// Launch the application.
@@ -53,8 +57,9 @@ public class LibraryGUI {
 	public static void main(String[] args) {
 		try {
 			Library.getInstance().loadValuesFromDB();
-		
 			
+		
+		
 		} catch (Exception e) {
 			// TODO handle  this exception
 		}
@@ -329,18 +334,92 @@ public class LibraryGUI {
 		
 		JPanel returnTab = new JPanel();
 		tabbedPaneInsideItemsInLib.addTab("Return Items", null, returnTab, null);
+		SpringLayout sl_returnTab = new SpringLayout();
+		returnTab.setLayout(sl_returnTab);
 		
 		JLabel itemIDReturnLabel = new JLabel("ItemID of the returned Item");
+		itemIDReturnLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
 		returnTab.add(itemIDReturnLabel);
 		
 		itemIDReturnText = new JTextField();
-		itemIDReturnText.setText("ItemID");
+		sl_returnTab.putConstraint(SpringLayout.NORTH, itemIDReturnLabel, 5, SpringLayout.NORTH, itemIDReturnText);
+		sl_returnTab.putConstraint(SpringLayout.EAST, itemIDReturnLabel, -37, SpringLayout.WEST, itemIDReturnText);
+		sl_returnTab.putConstraint(SpringLayout.NORTH, itemIDReturnText, 8, SpringLayout.NORTH, returnTab);
+		sl_returnTab.putConstraint(SpringLayout.WEST, itemIDReturnText, 396, SpringLayout.WEST, returnTab);
+		sl_returnTab.putConstraint(SpringLayout.EAST, itemIDReturnText, -147, SpringLayout.EAST, returnTab);
+		itemIDReturnText.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
 		returnTab.add(itemIDReturnText);
 		itemIDReturnText.setColumns(10);
 		
-		JButton returnItemText = new JButton("Return Item");
-		returnItemText.setEnabled(false);
-		returnTab.add(returnItemText);
+		final JButton returnItemButton = new JButton("Return Item");
+		sl_returnTab.putConstraint(SpringLayout.SOUTH, itemIDReturnText, -149, SpringLayout.NORTH, returnItemButton);
+		sl_returnTab.putConstraint(SpringLayout.EAST, returnItemButton, -299, SpringLayout.EAST, returnTab);
+		returnItemButton.setEnabled(false);
+		returnTab.add(returnItemButton);
+		
+		final JLabel returnSuccessMsg = new JLabel("");
+		sl_returnTab.putConstraint(SpringLayout.NORTH, returnSuccessMsg, 263, SpringLayout.NORTH, returnTab);
+		sl_returnTab.putConstraint(SpringLayout.SOUTH, returnSuccessMsg, -315, SpringLayout.SOUTH, returnTab);
+		sl_returnTab.putConstraint(SpringLayout.SOUTH, returnItemButton, -48, SpringLayout.NORTH, returnSuccessMsg);
+		sl_returnTab.putConstraint(SpringLayout.WEST, returnSuccessMsg, 199, SpringLayout.WEST, returnTab);
+		sl_returnTab.putConstraint(SpringLayout.EAST, returnSuccessMsg, -174, SpringLayout.EAST, returnTab);
+		returnTab.add(returnSuccessMsg);
+		
+		JLabel memIDWhileReturning = new JLabel("Please enter your member ID:");
+		sl_returnTab.putConstraint(SpringLayout.NORTH, memIDWhileReturning, 35, SpringLayout.SOUTH, itemIDReturnLabel);
+		sl_returnTab.putConstraint(SpringLayout.WEST, memIDWhileReturning, 127, SpringLayout.WEST, returnTab);
+		sl_returnTab.putConstraint(SpringLayout.SOUTH, memIDWhileReturning, 64, SpringLayout.SOUTH, itemIDReturnLabel);
+		sl_returnTab.putConstraint(SpringLayout.EAST, memIDWhileReturning, 0, SpringLayout.EAST, itemIDReturnLabel);
+		memIDWhileReturning.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+		returnTab.add(memIDWhileReturning);
+		
+		memIDTextwhileReturning = new JTextField();
+		memIDTextwhileReturning.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+		sl_returnTab.putConstraint(SpringLayout.WEST, memIDTextwhileReturning, 41, SpringLayout.EAST, memIDWhileReturning);
+		sl_returnTab.putConstraint(SpringLayout.SOUTH, memIDTextwhileReturning, 0, SpringLayout.SOUTH, memIDWhileReturning);
+		returnTab.add(memIDTextwhileReturning);
+		memIDTextwhileReturning.setColumns(5);
+		
+		// So that the pay fines button is enabled when user types something
+		itemIDReturnText.addKeyListener(
+				new KeyAdapter() {
+					public void keyReleased(KeyEvent keyEvent) {
+						returnSuccessMsg.setText("");
+						if (itemIDReturnText.getDocument().getLength() > 0) {
+							returnItemButton.setEnabled(true);
+						} else {
+							returnItemButton.setEnabled(false);
+						}
+
+					}
+				});
+		
+		returnItemButton.addActionListener(new ActionListener() { 
+			public void actionPerformed(ActionEvent e) { 
+				returnSuccessMsg.setText("");
+				try {
+					int rc = Library.getInstance().newReturnTransactionByMember(memIDTextwhileReturning.getText(), itemIDReturnText.getText());
+					switch (rc) {
+					case -1:
+						returnSuccessMsg.setText("MemID/ItemID not valid");
+						break;
+					case -2:
+						returnSuccessMsg.setText("No transactions found for this memID");
+						break;
+					case -3:
+						returnSuccessMsg.setText("Maybe you had not borrowed this item..");
+						break;
+					case 0:
+						returnSuccessMsg.setText("Successfully returned item.");
+						break;
+					}
+				} catch (UnsupportedEncodingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			} 
+		});
 		
 		JPanel payFineTab = new JPanel();
 		tabbedPaneInsideItemsInLib.addTab("Pay Fines", null, payFineTab, null);
@@ -390,11 +469,11 @@ public class LibraryGUI {
 		payFineTab.add(payFinesButton);
 		
 		final JLabel successLabel = new JLabel("");
+		sl_payFineTab.putConstraint(SpringLayout.WEST, successLabel, 0, SpringLayout.WEST, needToPayLabel);
+		sl_payFineTab.putConstraint(SpringLayout.EAST, successLabel, 553, SpringLayout.WEST, payFineTab);
 		successLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
 		sl_payFineTab.putConstraint(SpringLayout.NORTH, successLabel, 77, SpringLayout.SOUTH, payFinesButton);
-		sl_payFineTab.putConstraint(SpringLayout.WEST, successLabel, 155, SpringLayout.WEST, payFineTab);
 		sl_payFineTab.putConstraint(SpringLayout.SOUTH, successLabel, 120, SpringLayout.SOUTH, payFinesButton);
-		sl_payFineTab.putConstraint(SpringLayout.EAST, successLabel, 457, SpringLayout.WEST, payFineTab);
 		payFineTab.add(successLabel);
 		
 
@@ -424,6 +503,8 @@ public class LibraryGUI {
 					lookupFineButton.setEnabled(false);
 				} else if (f == 0) {
 					successLabel.setText("Hurray, No fines to pay!");
+					needToPayText.setText("");
+
 				}
 			} 
 		});
@@ -468,17 +549,7 @@ public class LibraryGUI {
 		searchItemsButton.setEnabled(false);
 		searchItemsButton.setMaximumSize(new Dimension(20,10));
 
-		// So that the button is enabled when user types something
-		searchItemstext.addKeyListener(new KeyAdapter() {
-			public void keyReleased(KeyEvent keyEvent) {
-				if (searchItemstext.getDocument().getLength() > 0) {
-					searchItemsButton.setEnabled(true);
-				} else {
-					searchItemsButton.setEnabled(false);
-				}
-
-			}
-		});
+	
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(6, 78, 603, 406);
@@ -488,28 +559,89 @@ public class LibraryGUI {
 		scrollPane.setViewportView(table);
 		
 		final JButton reserveButton = new JButton("Reserve Item");
+		reserveButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
 		reserveButton.setEnabled(false);
-		reserveButton.setBounds(111, 559, 117, 29);
+		reserveButton.setBounds(111, 547, 117, 29);
 		searchPane.add(reserveButton);
 		
-		JLabel lblNewLabel = new JLabel("Enter member ID to reserve or checkout:");
-		lblNewLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
-		lblNewLabel.setBounds(69, 499, 322, 36);
-		searchPane.add(lblNewLabel);
+		JLabel memIDForCheckoutReserveLabel = new JLabel("Enter member ID to reserve or checkout:");
+		memIDForCheckoutReserveLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+		memIDForCheckoutReserveLabel.setBounds(69, 499, 322, 36);
+		searchPane.add(memIDForCheckoutReserveLabel);
+		
+		final JLabel checkoutReserveStatusLabel = new JLabel("");
+		checkoutReserveStatusLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+		checkoutReserveStatusLabel.setBounds(121, 588, 371, 31);
+		searchPane.add(checkoutReserveStatusLabel);
 		
 		final JButton checkoutButton = new JButton("Checkout Item");
+		checkoutButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				switch (Library.getInstance().newCheckoutTransactionByMember(memIDForCheckoutReserve.getText(),
+						(String) (table.getValueAt(table.getSelectedRow(), 1)))) {
+				case -1:
+					checkoutReserveStatusLabel.setText("Fine not paid or memID not found");
+					break;
+				case -2:
+					checkoutReserveStatusLabel.setText("ItemID not found");
+					break;
+				case -3:
+					checkoutReserveStatusLabel.setText("Somebody else has already reserved Item");
+					break;
+				case -4:
+					checkoutReserveStatusLabel.setText("Invalid Item state");
+					break;
+				case -5:
+					checkoutReserveStatusLabel.setText("You have checked out max items of this type");
+					break;
+				case 1:
+					checkoutReserveStatusLabel.setText("Item checkedout successfully!");
+					break;
+				}
+		       // table.clear();
+				checkoutButton.setEnabled(false);
+				reserveButton.setEnabled(false);
+		        
+						
+			}
+		});
+		
+		// So that the button is enabled when user types something
+		searchItemstext.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent keyEvent) {
+				if (searchItemstext.getDocument().getLength() > 0) {
+					searchItemsButton.setEnabled(true);
+				} else {
+					// Disable all buttons if nothing is searched
+					searchItemsButton.setEnabled(false);
+			        table.clear();
+			        checkoutButton.setEnabled(false);
+					reserveButton.setEnabled(false);
+			        
+				}
+
+			}
+		});
+		
+		
 		checkoutButton.setEnabled(false);
 		checkoutButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		checkoutButton.setBounds(316, 559, 117, 29);
+		checkoutButton.setBounds(316, 547, 117, 29);
 		searchPane.add(checkoutButton);
 		
 		memIDForCheckoutReserve = new JTextField();
 		memIDForCheckoutReserve.setBounds(401, 504, 134, 28);
 		searchPane.add(memIDForCheckoutReserve);
 		memIDForCheckoutReserve.setColumns(5);
+		
+		
 		
 		// So that the button is enabled when user types something
 		memIDForCheckoutReserve.addKeyListener(new KeyAdapter() {
@@ -540,6 +672,7 @@ public class LibraryGUI {
 				
 		searchItemsButton.addActionListener(new ActionListener() { 
 		    public void actionPerformed(ActionEvent e) { 
+				checkoutReserveStatusLabel.setText(null);
 		        ArrayList<Item> l = (ArrayList<Item>) Library.getInstance().queryIfItemAvailable(searchItemstext.getText());
 		        table.clear();
 		        table.addItems(l);
@@ -547,43 +680,132 @@ public class LibraryGUI {
 		});
 		
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-	        public void valueChanged(ListSelectionEvent event) {
-	            // do some actions here, for example
-	            // print first column value from selected row
-	        	Item i = Library.getInstance().getItemIfPresent((String) (table.getValueAt(table.getSelectedRow(), 1)));
-	            if (i != null && memIDForCheckoutReserve.getDocument().getLength() == 5) {
-	            	if (i.getItemState() == ItemStates.AVAILABLE ) {
-	            		checkoutButton.setEnabled(true);
-	            	} else if (i.getItemState() == ItemStates.RESERVED) {
-	            		if (i.getItemReservedBy() == memIDForCheckoutReserve.getText()) {
-		            		checkoutButton.setEnabled(true);
-	            		}
-	            	} else if (i.getItemState() == ItemStates.CHECKEDOUT) {
-	            		reserveButton.setEnabled(true);
-	            	}
-	            }				            
-		
-	        }
-	    });
+			public void valueChanged(ListSelectionEvent event) {
+				// do some actions here, for example
+				// print first column value from selected row
+				if (table.getSelectedRows().length != 0 ) {
+					checkoutButton.setEnabled(false);
+					reserveButton.setEnabled(false);
+					Item i = Library.getInstance().getItemIfPresent((String) (table.getValueAt(table.getSelectedRow(), 1)));
+					if (i != null && memIDForCheckoutReserve.getDocument().getLength() == 5) {
+						if (i.getItemState() == ItemStates.AVAILABLE ) {
+							checkoutButton.setEnabled(true);
+						} else if (i.getItemState() == ItemStates.RESERVED) {
+							if (i.getItemReservedBy() == memIDForCheckoutReserve.getText()) {
+								checkoutButton.setEnabled(true);
+							}
+						} else if (i.getItemState() == ItemStates.CHECKEDOUT) {
+							reserveButton.setEnabled(true);
+						}
+					}				            
+
+				} else {
+					checkoutButton.setEnabled(false);
+					reserveButton.setEnabled(false);
+				}
+			}
+		});
 		
 		
 		JPanel queryTransTab = new JPanel();
 		tabbedPaneInsideItemsInLib.addTab("Query previous transactions", null, queryTransTab, null);
+		SpringLayout sl_queryTransTab = new SpringLayout();
+		queryTransTab.setLayout(sl_queryTransTab);
 		
 		JLabel queryLabel = new JLabel("Query your previous transactions");
+		sl_queryTransTab.putConstraint(SpringLayout.NORTH, queryLabel, 11, SpringLayout.NORTH, queryTransTab);
+		sl_queryTransTab.putConstraint(SpringLayout.WEST, queryLabel, 106, SpringLayout.WEST, queryTransTab);
 		queryLabel.setToolTipText("Enter your member ID here");
 		queryTransTab.add(queryLabel);
 		
 		queryTransText = new JTextField();
+		sl_queryTransTab.putConstraint(SpringLayout.NORTH, queryTransText, 5, SpringLayout.NORTH, queryTransTab);
+		sl_queryTransTab.putConstraint(SpringLayout.WEST, queryTransText, 320, SpringLayout.WEST, queryTransTab);
 		queryTransTab.add(queryTransText);
 		queryTransText.setColumns(10);
 		
-		JButton queryTransButton = new JButton("Query transaction");
+		JScrollPane queryScrollPane = new JScrollPane();
+		sl_queryTransTab.putConstraint(SpringLayout.WEST, queryScrollPane, 56, SpringLayout.WEST, queryTransTab);
+		sl_queryTransTab.putConstraint(SpringLayout.EAST, queryScrollPane, -54, SpringLayout.EAST, queryTransTab);
+		//queryScrollPane.setBounds(6, 78, 603, 406);
+		queryTransTab.add(queryScrollPane);
+		
+		
+		queryResults = new QueryTransactionTable();
+	
+
+		queryResults.setFont(new Font("Lucida Grande", Font.PLAIN, 14));
+		queryScrollPane.setViewportView(queryResults);
+
+		queryResults.setRowSelectionAllowed(false);
+		
+
+		final JButton queryTransButton = new JButton("Query transaction");
+		sl_queryTransTab.putConstraint(SpringLayout.NORTH, queryScrollPane, 70, SpringLayout.SOUTH, queryTransButton);
+		sl_queryTransTab.putConstraint(SpringLayout.SOUTH, queryScrollPane, 490, SpringLayout.SOUTH, queryTransButton);
+
+		sl_queryTransTab.putConstraint(SpringLayout.NORTH, queryResults, 439, SpringLayout.SOUTH, queryTransButton);
+		sl_queryTransTab.putConstraint(SpringLayout.WEST, queryResults, 165, SpringLayout.WEST, queryTransTab);
+		sl_queryTransTab.putConstraint(SpringLayout.SOUTH, queryResults, 96, SpringLayout.SOUTH, queryTransText);
+		sl_queryTransTab.putConstraint(SpringLayout.EAST, queryResults, -59, SpringLayout.EAST, queryTransTab);
+		
+		
+				
+		final JLabel querySuccessMsg = new JLabel("");
+		sl_queryTransTab.putConstraint(SpringLayout.NORTH, querySuccessMsg, 23, SpringLayout.SOUTH, queryTransButton);
+		sl_queryTransTab.putConstraint(SpringLayout.WEST, querySuccessMsg, 262, SpringLayout.WEST, queryTransTab);
+		sl_queryTransTab.putConstraint(SpringLayout.SOUTH, querySuccessMsg, -19, SpringLayout.NORTH, queryScrollPane);
+		sl_queryTransTab.putConstraint(SpringLayout.EAST, querySuccessMsg, -235, SpringLayout.EAST, queryTransTab);
+		queryTransTab.add(querySuccessMsg);
+		
+		// So that the button is enabled when user types something
+				queryTransText.addKeyListener(new KeyAdapter() {
+							public void keyReleased(KeyEvent keyEvent) {
+					        	querySuccessMsg.setText(null);
+								if (queryTransText.getDocument().getLength() == 5) {
+									queryTransButton.setEnabled(true);
+								} else {
+									queryTransButton.setEnabled(false);
+									queryResults.clear();
+
+								}
+
+							}
+						});
+				
+		queryTransButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ArrayList<Transaction> t = (ArrayList<Transaction>)Library.getInstance().queryForTransactionHistory(queryTransText.getText());
+				queryResults.clear();
+		        queryResults.addItems(t);
+		        if (t == null) {
+		        	querySuccessMsg.setText("Please check the member ID again");
+		        }
+			}
+		});
+		
+		sl_queryTransTab.putConstraint(SpringLayout.NORTH, queryTransButton, 5, SpringLayout.NORTH, queryTransTab);
+		sl_queryTransTab.putConstraint(SpringLayout.WEST, queryTransButton, 459, SpringLayout.WEST, queryTransTab);
 		queryTransButton.setEnabled(false);
 		queryTransTab.add(queryTransButton);
 		
-		JScrollPane adminScrollPane = new JScrollPane();
-		tabbedPane.addTab("Library Admin", null, adminScrollPane, null);
 		
+		
+	
+		
+		JScrollPane adminScrollPane = new JScrollPane();
+		JTabbedPane libAdminTabs = new JTabbedPane(JTabbedPane.TOP);
+		adminScrollPane.setViewportView(libAdminTabs);
+		
+		JPanel findNumOfItems = new JPanel();
+		libAdminTabs.addTab("Items in Library", null, findNumOfItems, null);
+		
+		JPanel panel_2 = new JPanel();
+		libAdminTabs.addTab("New tab", null, panel_2, null);
+		
+		JPanel panel_3 = new JPanel();
+		libAdminTabs.addTab("New tab", null, panel_3, null);
+		tabbedPane.addTab("Library Admin", null, adminScrollPane, null);
 	}
 }
