@@ -231,7 +231,7 @@ public class Library {
 			i.setItemState(ItemStates.CHECKEDOUT);
 			break;
 		case RESERVED:
-			if (i.getItemReservedBy() == memID) {
+			if (i.getItemReservedBy().toLowerCase().equals(memID.toLowerCase())) {
 				//This person has reserved the item. Let him check it out.
 				i.setItemState(ItemStates.CHECKEDOUT);
 				i.setItemReservedBy(null);
@@ -495,7 +495,7 @@ public class Library {
 		
 	}
 	
-	public void reserveItem (String itemId, String memID) {
+	public int reserveItem (String itemId, String memID) {
 		if (itemsMap.containsKey(itemId) && getLibraryMemberIfPresent(memID) != null) {
 			/*
 			 * If we have the item in our database 
@@ -511,7 +511,12 @@ public class Library {
 			if (i.getItemState() == ItemStates.CHECKEDOUT) { 
 				i.setItemState(ItemStates.CHECKEDOUTANDRESERVED);
 				i.setItemReservedBy (memID);
+				return 1;
+			} else {
+				return -2 ; // Item state is not checkedout. So you can checkout, not reserve.
 			}
+		} else {
+			return -1; // memID/ItemID wrong
 		}
 	}
 	

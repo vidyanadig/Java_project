@@ -558,11 +558,31 @@ public class LibraryGUI {
 		table = new SearchResultsItemsTable();
 		scrollPane.setViewportView(table);
 		
+		
+		final JLabel checkoutReserveStatusLabel = new JLabel("");
+		checkoutReserveStatusLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+		checkoutReserveStatusLabel.setBounds(121, 588, 371, 31);
+		searchPane.add(checkoutReserveStatusLabel);
+		
+		
 		final JButton reserveButton = new JButton("Reserve Item");
 		reserveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				switch (Library.getInstance().reserveItem((String) (table.getValueAt(table.getSelectedRow(), 1)), memIDForCheckoutReserve.getText())) {
+				case -1:
+					checkoutReserveStatusLabel.setText("MemID wrong. Please reenter");
+					break;
+				case -2:
+					checkoutReserveStatusLabel.setText("Item is not in checkout state, so cannot reserve");
+					break;
+				case 1:
+					checkoutReserveStatusLabel.setText("Item reserved successfully!");
+					break;
+				}
 			}
+
 		});
+		
 		reserveButton.setEnabled(false);
 		reserveButton.setBounds(111, 547, 117, 29);
 		searchPane.add(reserveButton);
@@ -571,12 +591,7 @@ public class LibraryGUI {
 		memIDForCheckoutReserveLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
 		memIDForCheckoutReserveLabel.setBounds(69, 499, 322, 36);
 		searchPane.add(memIDForCheckoutReserveLabel);
-		
-		final JLabel checkoutReserveStatusLabel = new JLabel("");
-		checkoutReserveStatusLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
-		checkoutReserveStatusLabel.setBounds(121, 588, 371, 31);
-		searchPane.add(checkoutReserveStatusLabel);
-		
+	
 		final JButton checkoutButton = new JButton("Checkout Item");
 		checkoutButton.addMouseListener(new MouseAdapter() {
 			@Override
@@ -621,7 +636,7 @@ public class LibraryGUI {
 			        table.clear();
 			        checkoutButton.setEnabled(false);
 					reserveButton.setEnabled(false);
-			        
+					checkoutReserveStatusLabel.setText(null);
 				}
 
 			}
@@ -646,6 +661,7 @@ public class LibraryGUI {
 		// So that the button is enabled when user types something
 		memIDForCheckoutReserve.addKeyListener(new KeyAdapter() {
 					public void keyReleased(KeyEvent keyEvent) {
+						checkoutReserveStatusLabel.setText(null);
 						if (memIDForCheckoutReserve.getDocument().getLength() == 5 && (table.getSelectedRows()).length != 0 ) {
 						    
 							Item i = Library.getInstance().getItemIfPresent((String) (table.getValueAt(table.getSelectedRow(), 1)));
@@ -653,7 +669,7 @@ public class LibraryGUI {
 				            	if (i.getItemState() == ItemStates.AVAILABLE ) {
 				            		checkoutButton.setEnabled(true);
 				            	} else if (i.getItemState() == ItemStates.RESERVED) {
-				            		if (i.getItemReservedBy() == memIDForCheckoutReserve.getText()) {
+				            		if (i.getItemReservedBy().toLowerCase().equals(memIDForCheckoutReserve.getText().toLowerCase())) {
 					            		checkoutButton.setEnabled(true);
 				            		}
 				            	} else if (i.getItemState() == ItemStates.CHECKEDOUT) {
@@ -664,7 +680,6 @@ public class LibraryGUI {
 						} else {
 							checkoutButton.setEnabled(false);
 							reserveButton.setEnabled(false);
-
 						}
 
 					}
@@ -759,19 +774,19 @@ public class LibraryGUI {
 		queryTransTab.add(querySuccessMsg);
 		
 		// So that the button is enabled when user types something
-				queryTransText.addKeyListener(new KeyAdapter() {
-							public void keyReleased(KeyEvent keyEvent) {
-					        	querySuccessMsg.setText(null);
-								if (queryTransText.getDocument().getLength() == 5) {
-									queryTransButton.setEnabled(true);
-								} else {
-									queryTransButton.setEnabled(false);
-									queryResults.clear();
+		queryTransText.addKeyListener(new KeyAdapter() {
+			public void keyReleased(KeyEvent keyEvent) {
+				querySuccessMsg.setText(null);
+				if (queryTransText.getDocument().getLength() == 5) {
+					queryTransButton.setEnabled(true);
+				} else {
+					queryTransButton.setEnabled(false);
+					queryResults.clear();
 
-								}
+				}
 
-							}
-						});
+			}
+		});
 				
 		queryTransButton.addActionListener(new ActionListener() {
 			@Override
