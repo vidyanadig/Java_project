@@ -4,6 +4,8 @@
 package edu.scu.oop.bookmarkers.model;
 
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author vidyanadig
@@ -78,5 +80,19 @@ public abstract class Item implements Serializable{
 	
 	public String getItemReservedBy () {
 		return this.itemReservedBy;
+	}
+	
+	public static void setNumOfItemsInEachCategory (Map<String, Item> itemsMap) {
+		Iterator<Item> iterItemsMap = itemsMap.values().iterator();
+		while (iterItemsMap.hasNext()) {
+			Item i = iterItemsMap.next();
+			if (i instanceof Fiction) {
+				Fiction.numOfItems++;
+			} else if (i instanceof NonFiction) {
+				NonFiction.numOfItems++;
+			} else if (i instanceof Video) {
+				Video.numOfItems++;
+			}
+		}
 	}
 }

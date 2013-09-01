@@ -1,8 +1,8 @@
 package edu.scu.oop.bookmarkers.model;
 
 public final class Video extends Item {
-	static double finePerSecond = 0.50; // 50 cents per day
-	static int numOfItems;
+	private static double finePerSecond = 0.50; // 50 cents per day
+	public static int numOfItems;
 	
 	public Video(String title, String author, double itemPrice) {
 		super ("V".concat(title), author, itemPrice);
@@ -21,5 +21,8 @@ public final class Video extends Item {
 		return "Video";
 	}
 
+	public static int getNumOfItems () {
+		return numOfItems;
+	}
 	
 }

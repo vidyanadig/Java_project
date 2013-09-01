@@ -1,8 +1,8 @@
 package edu.scu.oop.bookmarkers.model;
 
 public final class NonFiction extends Books {
-		static double finePerSecond = 0.30;
-		static int numOfItems;
+		private static double finePerSecond = 0.30;
+		public static int numOfItems;
 		
 		public NonFiction(String title, String author, double itemPrice) {
 			super ("NF".concat(title), author, itemPrice);
@@ -16,6 +16,10 @@ public final class NonFiction extends Books {
 		
 		public String getItemType() {
 			return "NonFiction";
+		}
+		
+		public static int getNumOfItems () {
+			return numOfItems;
 		}
 		
 }

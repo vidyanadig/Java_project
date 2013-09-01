@@ -58,7 +58,7 @@ public class LibraryGUI {
 		try {
 			Library.getInstance().loadValuesFromDB();
 			
-		
+			
 		
 		} catch (Exception e) {
 			// TODO handle  this exception
@@ -568,6 +568,8 @@ public class LibraryGUI {
 		final JButton reserveButton = new JButton("Reserve Item");
 		reserveButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				checkoutReserveStatusLabel.setText(null);
+
 				switch (Library.getInstance().reserveItem((String) (table.getValueAt(table.getSelectedRow(), 1)), memIDForCheckoutReserve.getText())) {
 				case -1:
 					checkoutReserveStatusLabel.setText("MemID wrong. Please reenter");
@@ -628,6 +630,8 @@ public class LibraryGUI {
 		// So that the button is enabled when user types something
 		searchItemstext.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent keyEvent) {
+				checkoutReserveStatusLabel.setText(null);
+
 				if (searchItemstext.getDocument().getLength() > 0) {
 					searchItemsButton.setEnabled(true);
 				} else {
@@ -687,6 +691,7 @@ public class LibraryGUI {
 				
 		searchItemsButton.addActionListener(new ActionListener() { 
 		    public void actionPerformed(ActionEvent e) { 
+		    	
 				checkoutReserveStatusLabel.setText(null);
 		        ArrayList<Item> l = (ArrayList<Item>) Library.getInstance().queryIfItemAvailable(searchItemstext.getText());
 		        table.clear();
@@ -698,6 +703,8 @@ public class LibraryGUI {
 			public void valueChanged(ListSelectionEvent event) {
 				// do some actions here, for example
 				// print first column value from selected row
+				checkoutReserveStatusLabel.setText(null);
+
 				if (table.getSelectedRows().length != 0 ) {
 					checkoutButton.setEnabled(false);
 					reserveButton.setEnabled(false);
@@ -805,22 +812,8 @@ public class LibraryGUI {
 		queryTransButton.setEnabled(false);
 		queryTransTab.add(queryTransButton);
 		
-		
-		
+		JScrollPane adminScrollPane = new LibraryAdminPane();		
 	
-		
-		JScrollPane adminScrollPane = new JScrollPane();
-		JTabbedPane libAdminTabs = new JTabbedPane(JTabbedPane.TOP);
-		adminScrollPane.setViewportView(libAdminTabs);
-		
-		JPanel findNumOfItems = new JPanel();
-		libAdminTabs.addTab("Items in Library", null, findNumOfItems, null);
-		
-		JPanel panel_2 = new JPanel();
-		libAdminTabs.addTab("New tab", null, panel_2, null);
-		
-		JPanel panel_3 = new JPanel();
-		libAdminTabs.addTab("New tab", null, panel_3, null);
 		tabbedPane.addTab("Library Admin", null, adminScrollPane, null);
 	}
 }

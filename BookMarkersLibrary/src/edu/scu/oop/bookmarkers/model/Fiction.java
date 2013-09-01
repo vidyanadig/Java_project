@@ -1,8 +1,8 @@
 package edu.scu.oop.bookmarkers.model;
 
 public final class Fiction extends Books {
-	static double finePerSecond = 0.15;
-	static int numOfItems;
+	private static double finePerSecond = 0.15;
+	public static int numOfItems;
 	
 	public Fiction(String title, String author, double itemPrice) {
 		super ("F".concat(title), author, itemPrice);
@@ -17,5 +17,9 @@ public final class Fiction extends Books {
 		return "Fiction";
 	}
 
+	public static int getNumOfItems () {
+		return numOfItems;
+	}
+	
 	
 }

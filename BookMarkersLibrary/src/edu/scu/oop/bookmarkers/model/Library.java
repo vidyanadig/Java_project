@@ -58,25 +58,30 @@ public class Library {
 	// Load from backend related functions
 	public void loadValuesFromDB () throws FileNotFoundException, ClassNotFoundException, IOException {
 		libraryMembers = Serialization.loadMembersIntoHashMap();
-		System.out.print("Loaded Members from file");
+		LibraryMember.numberOfMembers = libraryMembers.size();
+		System.out.println("Loaded Members from file");
+
 		fineList = Serialization.loadFinesFromFinesFile();
-		System.out.print("Loaded fines from DB");
+		System.out.println("Loaded fines from DB");
+		
 		transactionMap = Serialization.loadTransactionIntoHashMap();
-		System.out.print("Loaded transactions from file");
+		System.out.println("Loaded transactions from file");
+		
 		itemsMap = Serialization.loadItemsIntoHashMap() ;
-		System.out.print("Loaded items from file");
+		Item.setNumOfItemsInEachCategory(itemsMap);
+		System.out.println("Loaded  "+ itemsMap.size() + "items from file");
 	}
 
 	// Write to backend related functions
 	public void writeValuesToDB () throws FileNotFoundException, ClassNotFoundException, IOException {
 		Serialization.writeMembersFromHashMapIntoFile(libraryMembers);
-		System.out.print("Wrote Members into file");
+		System.out.println("Wrote Members into file");
 		Serialization.writeFinesToFinesFile(fineList);
-		System.out.print("Wrote Members into file");
+		System.out.println("Wrote Members into file");
 		Serialization.writeTransactionFromHashMapIntoFile(transactionMap);
-		System.out.print("Wrote transactions into file");
+		System.out.println("Wrote transactions into file");
 		Serialization.writeItemsIntoFile(itemsMap);
-		System.out.print("Wrote items into file");
+		System.out.println("Wrote " + itemsMap.size() + "items into file");
 	}
 
 	public LibraryMember getLibraryMemberIfPresent (String memId) {
@@ -410,7 +415,7 @@ public class Library {
 	}
 	
 	// Total fines collected by Library between "from" and "to" dates
-	public double totalFinesCollectedByLibrary (Date fromDate, Date toDate) {
+	public Double totalFinesCollectedByLibrary (Date fromDate, Date toDate) {
 		Iterator<FineObject> fineIter = fineList.iterator();
 		double totalfinesCollected = 0;
 		while (fineIter.hasNext()) {
@@ -428,13 +433,14 @@ public class Library {
 		int checkedOutCount = 0;
 		for (Item item : itemsMap.values()) {
 		    if (item.getItemState() == ItemStates.CHECKEDOUT) {
+		    	System.out.println("Checkout items inc");
 		    	checkedOutCount++;
 		    }
 		}
 		return checkedOutCount;
 	}
 	
-	public Item mostCheckedOutBookInAMonth (int month) {
+	public String mostCheckedOutBookInAMonth (int month) {
 		//Iterator of list of transactions. This will just give a iter or all the transaction lists.
 		Iterator<List<Transaction>> oldCheckoutTransactionIter = transactionMap.values().iterator();
 		Iterator<Transaction> transIter;
@@ -464,14 +470,18 @@ public class Library {
 			}
 		}
 		
-		// Now that we have a map of (itemId,numberOfCheckouts), find the largest number.
-		Map.Entry<String, Integer> maxEntry = null;
-		for(Map.Entry <String, Integer> entry: mostCheckedMap.entrySet()) {
-			if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
-				maxEntry = entry;
+		if (mostCheckedMap.size() != 0) {
+			// Now that we have a map of (itemId,numberOfCheckouts), find the largest number.
+			Map.Entry<String, Integer> maxEntry = null;
+			for(Map.Entry <String, Integer> entry: mostCheckedMap.entrySet()) {
+				if (maxEntry == null || entry.getValue() > maxEntry.getValue()) {
+					maxEntry = entry;
+				}
 			}
+			return itemsMap.get(maxEntry.getKey()).getItemTitle();
+		} else {
+			return "No Item checked out in this month";
 		}
-		return itemsMap.get(maxEntry.getKey());
 	}
 	
 	// Called when a person queries for an Item

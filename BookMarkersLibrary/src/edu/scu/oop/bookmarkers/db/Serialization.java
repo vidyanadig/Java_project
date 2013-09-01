@@ -68,6 +68,7 @@ public class Serialization implements Serializable  {
 		Map <String, Item> m = (Map <String, Item>)in.readObject();
 
 		in.close();
+		System.out.println("returning from loading items");
 		return m;
 		
 	}
