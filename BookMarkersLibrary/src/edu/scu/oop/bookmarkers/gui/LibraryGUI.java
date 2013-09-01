@@ -1,37 +1,38 @@
 package edu.scu.oop.bookmarkers.gui;
 
-import java.awt.EventQueue;
-import edu.scu.oop.bookmarkers.model.*;
-
-import javax.swing.JFrame;
 import java.awt.BorderLayout;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.JScrollPane;
+import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
-import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
-import java.awt.Color;
-import javax.swing.UIManager;
-import javax.swing.JTextField;
-import javax.swing.JButton;
-import java.awt.GridLayout;
-import javax.swing.SpringLayout;
-import javax.swing.event.*;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
+import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
+import edu.scu.oop.bookmarkers.model.Item;
+import edu.scu.oop.bookmarkers.model.ItemStates;
 import edu.scu.oop.bookmarkers.model.Library;
-import javax.swing.table.DefaultTableModel;
+import edu.scu.oop.bookmarkers.model.LibraryMember;
+import edu.scu.oop.bookmarkers.model.Transaction;
 
 public class LibraryGUI {
 
@@ -552,7 +553,7 @@ public class LibraryGUI {
 	
 		
 		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(6, 78, 603, 406);
+		scrollPane.setBounds(6, 78, 698, 406);
 		searchPane.add(scrollPane);
 		
 		table = new SearchResultsItemsTable();

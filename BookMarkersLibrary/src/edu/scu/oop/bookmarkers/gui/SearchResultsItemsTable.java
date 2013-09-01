@@ -27,7 +27,7 @@ public class SearchResultsItemsTable extends JTable {
 	private static class ItemsTableModel extends AbstractTableModel {
 		
 		List<Item> items;
-	    String[] header = {"Title", "ItemID", "Type", "Author", "State"};
+	    String[] header = {"Title", "ItemID", "Type", "Author/Director", "State"};
 	    
 	    public ItemsTableModel() {
 	    	items = new ArrayList<Item>();

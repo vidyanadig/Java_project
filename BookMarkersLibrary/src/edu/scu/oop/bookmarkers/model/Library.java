@@ -262,48 +262,6 @@ public class Library {
 		return 1;
 	}
 	
-	private void sendEmail (String emailID, String itemTitle) throws UnsupportedEncodingException {
-		//1. Set some properties
-		Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
-        final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
-
-		Properties props = new Properties();
-		props.setProperty("mail.smtps.host", "smtp.gmail.com");
-        props.setProperty("mail.smtp.socketFactory.class", SSL_FACTORY);
-        props.setProperty("mail.smtp.socketFactory.fallback", "false");
-        props.setProperty("mail.smtp.port", "465");
-        props.setProperty("mail.smtp.socketFactory.port", "465");
-        props.setProperty("mail.smtps.auth", "true");
-
-        Session session = Session.getInstance(props, null);
-
-        props.put("mail.smtps.quitwait", "false");
-        
-        //2. Set the msg body
-        String msgBody = "The book you reserved " + itemTitle + " is available! Please stop by.";
-        
-        //3. Create a new message
-        try {
-            Message msg = new MimeMessage(session);
-            //msg.setFrom(new InternetAddress("mailnadig@gmail.com"));
-            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(emailID, false));
-            msg.setSubject("Your Book is available at Bookmarkers!");
-            msg.setText(msgBody);
-            msg.setSentDate(new Date());
-            
-            System.out.println("Sending email !! This might take a while");
-
-            SMTPTransport t = (SMTPTransport)session.getTransport("smtps");
-            //4. Send out email
-            t.connect("smtp.gmail.com", "coen275java@gmail.com", "exceptions");
-            t.sendMessage(msg, msg.getAllRecipients());      
-            t.close();
-        } catch (AddressException e) {
-            // ...
-        } catch (MessagingException e) {
-            // ...
-        }
-	}
 	
 	/*
 	 * Called when a user scans an Item to return
@@ -354,8 +312,13 @@ public class Library {
 								return 0;
 							case CHECKEDOUTANDRESERVED:
 								i.setItemState(ItemStates.RESERVED);
-								// Send an email to the person who had reserved this book.
-								sendEmail(libraryMembers.get(i.getItemReservedBy()).getEmailId(), i.getItemTitle());
+								/*
+								 * Send an email to the person who had reserved this book.
+								 * This takes a lot of time, so create another thread.
+								 */
+								
+								Thread emailThread = new Thread(new sendEmail(libraryMembers.get(i.getItemReservedBy()).getEmailId(), i.getItemTitle()));
+								emailThread.start();
 								return 0;
 							default:
 								// We should not come here at all
