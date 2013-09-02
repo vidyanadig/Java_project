@@ -71,7 +71,7 @@ public class Library {
 		
 		itemsMap = Serialization.loadItemsIntoHashMap() ;
 		Item.setNumOfItemsInEachCategory(itemsMap);
-		System.out.println("Loaded  "+ itemsMap.size() + "items from file");
+		System.out.println("Loaded  "+ itemsMap.size() + " items from file");
 	}
 
 	// Write to backend related functions
@@ -83,7 +83,7 @@ public class Library {
 		Serialization.writeTransactionFromHashMapIntoFile(transactionMap);
 		System.out.println("Wrote transactions into file");
 		Serialization.writeItemsIntoFile(itemsMap);
-		System.out.println("Wrote " + itemsMap.size() + "items into file");
+		System.out.println("Wrote " + itemsMap.size() + " items into file");
 	}
 
 	public LibraryMember getLibraryMemberIfPresent (String memId) {
@@ -123,7 +123,7 @@ public class Library {
 			// TODO, raise exception
 			System.out.println("Previous same memID found, not adding !!");
 		}
-		System.out.println("Yay, added " + name);
+		System.out.println("Yay, added " + name + " with memID "+ l.getMembershipCardId());
 		return l;
 	}
 
@@ -172,6 +172,7 @@ public class Library {
 		}
 		newPrevItem.add(newItem);
 		newPrevItem.add(prevItem);
+	
 		return newPrevItem;
 	}
 	
@@ -255,12 +256,14 @@ public class Library {
 		switch (i.getItemState()) {
 		case AVAILABLE:
 			i.setItemState(ItemStates.CHECKEDOUT);
+			System.out.println("Woohoo, checkedout previously available book");
 			break;
 		case RESERVED:
 			if (i.getItemReservedBy().toLowerCase().equals(memID.toLowerCase())) {
 				//This person has reserved the item. Let him check it out.
 				i.setItemState(ItemStates.CHECKEDOUT);
 				i.setItemReservedBy(null);
+				System.out.println("Woohoo, checkedout previously reserved book");
 			} else {
 				//Return error. TODO
 				System.out.println("This person has not reserved this item, someone else has");
@@ -330,6 +333,7 @@ public class Library {
 						switch (i.getItemState()) {
 							case CHECKEDOUT:
 								i.setItemState(ItemStates.AVAILABLE);
+								System.out.println("Setting itemstate AVAILABLE");
 								return 0;
 							case CHECKEDOUTANDRESERVED:
 								i.setItemState(ItemStates.RESERVED);
@@ -337,7 +341,8 @@ public class Library {
 								 * Send an email to the person who had reserved this book.
 								 * This takes a lot of time, so create another thread.
 								 */
-								
+								System.out.println("Setting itemstate RESERVED");
+
 								Thread emailThread = new Thread(new sendEmail(libraryMembers.get(i.getItemReservedBy()).getEmailId(), i.getItemTitle()));
 								emailThread.start();
 								return 0;
@@ -375,6 +380,7 @@ public class Library {
 			}
 			fineList.add(f);
 			l.memberPaysFines();
+			System.out.println("$$$ yay, got some fines paid by " + memId );
 			return true;
 		} else {
 			System.out.println("No user found in database ! ");
@@ -410,6 +416,7 @@ public class Library {
 				totalfinesCollected += f.getFine();
 			}
 		}
+		System.out.println("Total fines collected $" + totalfinesCollected);
 		return totalfinesCollected;
 	}
 
@@ -421,6 +428,8 @@ public class Library {
 		    	checkedOutCount++;
 		    }
 		}
+		System.out.println("Total items checkedout " + checkedOutCount);
+
 		return checkedOutCount;
 	}
 	
@@ -516,9 +525,12 @@ public class Library {
 	
 	public List<Transaction> queryForTransactionHistory (String memID) {
 		if (transactionMap.containsKey(memID)) {
+			System.out.println("Found some previous transactions for this memID");
 			return transactionMap.get(memID);
-		} else 
+		} else {
+			System.out.println("Found NO previous transactions for this memID");
 			return null;
+		}
 	}
 	
 	/*
@@ -583,6 +595,11 @@ public class Library {
 			Library.getInstance().newLibraryItemRegistration("NatGeo: Penguins", "Nat Geo", 30.5, "NF");
 			Library.getInstance().newLibraryItemRegistration("NatGeo: Sea Turtles", "Nat Geo", 30.5, "NF");
 			Library.getInstance().newLibraryItemRegistration("NatGeo: Elephants", "Nat Geo", 40.5, "NF");
+
+
+			Library.getInstance().newLibraryItemRegistration("Amelia's story", "D G Torrens", 10.5, "NF");
+			Library.getInstance().newLibraryItemRegistration("Broken Pieces", "Rachel Thompson", 5.99, "V");
+			Library.getInstance().newLibraryItemRegistration("The Great Gatsby", "Fitzgerald", 7.70, "NF");
 
 		// Save our internal datastructures into storage .
  		Library.getInstance().writeValuesToDB();

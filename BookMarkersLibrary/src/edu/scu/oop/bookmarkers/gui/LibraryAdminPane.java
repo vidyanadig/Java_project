@@ -133,7 +133,7 @@ public class LibraryAdminPane extends JScrollPane {
 		numberOfItemsMembers.setLayout(sl_numberOfItemsMembers);
 
 		JLabel headingNumItemsMem = new JLabel("Number of Items and Members");
-		sl_numberOfItemsMembers.putConstraint(SpringLayout.EAST, monthList, -48, SpringLayout.EAST, headingNumItemsMem);
+		sl_numberOfItemsMembers.putConstraint(SpringLayout.EAST, monthList, -46, SpringLayout.EAST, headingNumItemsMem);
 		sl_numberOfItemsMembers.putConstraint(SpringLayout.NORTH, headingNumItemsMem, 10, SpringLayout.NORTH, numberOfItemsMembers);
 		sl_numberOfItemsMembers.putConstraint(SpringLayout.WEST, headingNumItemsMem, 212, SpringLayout.WEST, numberOfItemsMembers);
 		sl_numberOfItemsMembers.putConstraint(SpringLayout.SOUTH, headingNumItemsMem, 63, SpringLayout.NORTH, numberOfItemsMembers);
@@ -167,8 +167,8 @@ public class LibraryAdminPane extends JScrollPane {
 		numberOfItemsMembers.add(numMembersLabel);
 
 		JLabel lblMostCheckedoutBook = new JLabel("Most Checkedout Book \nin the month: ");
-		sl_numberOfItemsMembers.putConstraint(SpringLayout.NORTH, monthList, 9, SpringLayout.NORTH, lblMostCheckedoutBook);
-		sl_numberOfItemsMembers.putConstraint(SpringLayout.WEST, monthList, 6, SpringLayout.EAST, lblMostCheckedoutBook);
+		sl_numberOfItemsMembers.putConstraint(SpringLayout.NORTH, monthList, 34, SpringLayout.NORTH, lblMostCheckedoutBook);
+		sl_numberOfItemsMembers.putConstraint(SpringLayout.WEST, monthList, 8, SpringLayout.EAST, lblMostCheckedoutBook);
 		sl_numberOfItemsMembers.putConstraint(SpringLayout.NORTH, lblMostCheckedoutBook, 54, SpringLayout.SOUTH, numOfMembers);
 		sl_numberOfItemsMembers.putConstraint(SpringLayout.WEST, lblMostCheckedoutBook, 0, SpringLayout.WEST, numOfMembers);
 		sl_numberOfItemsMembers.putConstraint(SpringLayout.SOUTH, lblMostCheckedoutBook, -269, SpringLayout.SOUTH, numberOfItemsMembers);

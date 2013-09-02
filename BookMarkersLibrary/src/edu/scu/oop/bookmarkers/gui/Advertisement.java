@@ -40,10 +40,6 @@ public class Advertisement extends JPanel{
 		initialize();
 		this.setBackground(Color.white);
 		
-		
-		
-		
-	
 	}
 	
 	private void initialize() {
