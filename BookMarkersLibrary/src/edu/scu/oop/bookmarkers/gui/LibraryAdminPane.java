@@ -71,6 +71,7 @@ public class LibraryAdminPane extends JScrollPane {
 		findNumOfItems = new JPanel();
 		libAdminTabs.setVisible(false);
 
+		// Vidya remove this!!!!
 		parentWindow = SwingUtilities.windowForComponent(this); 
 		loginDialog = new LoginDialog(parentWindow, libAdminTabs);
 

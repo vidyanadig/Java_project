@@ -5,7 +5,9 @@ public final class NonFiction extends Books {
 		public static int numOfItems;
 		
 		public NonFiction(String title, String author, double itemPrice) {
-			super ("NF".concat(title), author, itemPrice);
+			super (title, author, itemPrice);
+			itemID = "NF".concat(itemID);
+
 			numOfItems++;
 		} 
 		

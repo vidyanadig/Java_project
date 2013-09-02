@@ -5,7 +5,8 @@ public final class Video extends Item {
 	public static int numOfItems;
 	
 	public Video(String title, String author, double itemPrice) {
-		super ("V".concat(title), author, itemPrice);
+		super (title, author, itemPrice);
+		itemID = "V".concat(itemID);
 		numOfItems++;
 	}
 	

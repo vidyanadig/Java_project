@@ -1,6 +1,7 @@
 package edu.scu.oop.bookmarkers.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -33,6 +34,8 @@ import edu.scu.oop.bookmarkers.model.ItemStates;
 import edu.scu.oop.bookmarkers.model.Library;
 import edu.scu.oop.bookmarkers.model.LibraryMember;
 import edu.scu.oop.bookmarkers.model.Transaction;
+import java.awt.Component;
+import java.awt.Rectangle;
 
 public class LibraryGUI {
 
@@ -59,10 +62,11 @@ public class LibraryGUI {
 		try {
 			Library.getInstance().loadValuesFromDB();
 			
-			
 		
 		} catch (Exception e) {
 			// TODO handle  this exception
+			System.out.println("Adding new items exception");
+
 		}
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -73,6 +77,9 @@ public class LibraryGUI {
 					@Override
 					public void windowClosing (WindowEvent we) {
 						try {
+							System.out.println("Interrupting Ad thread now so it stops");
+							Advertisement.adThread.interrupt();
+							System.out.println("Writing all values into files");
 							Library.getInstance().writeValuesToDB();
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
@@ -100,28 +107,48 @@ public class LibraryGUI {
 	 */
 	private void initialize() {
 		frame = new JFrame();
+		frame.getContentPane().setMinimumSize(new Dimension(30, 0));
 		frame.setResizable(false);
 		frame.setBounds(200, 100, 900, 800);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(new BorderLayout(0, 0));
 		
-		JPanel panel = new JPanel();
-		frame.getContentPane().add(panel, BorderLayout.WEST);
+	
+		SpringLayout springLayout = new SpringLayout();
+		frame.getContentPane().setLayout(springLayout);
 		
-		JLabel lblNewEntries = new JLabel("Our New Entries!");
-		lblNewEntries.setFont(new Font("Lucida Grande", Font.PLAIN, 15));
-		panel.add(lblNewEntries);
+		
+		// Move on to something else
+	
 		
 		JLabel welcomeLabel = new JLabel();
+		springLayout.putConstraint(SpringLayout.NORTH, welcomeLabel, 0, SpringLayout.NORTH, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, welcomeLabel, 0, SpringLayout.WEST, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.EAST, welcomeLabel, 900, SpringLayout.WEST, frame.getContentPane());
 		welcomeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		welcomeLabel.setFont(new Font("Lucida Grande", Font.PLAIN, 30));
 		welcomeLabel.setText("Welcome to BookMarkers Library!");
-		frame.getContentPane().add(welcomeLabel, BorderLayout.NORTH);
+		frame.getContentPane().add(welcomeLabel);
 		
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		frame.getContentPane().add(tabbedPane, BorderLayout.CENTER);
+		springLayout.putConstraint(SpringLayout.NORTH, tabbedPane, 36, SpringLayout.NORTH, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, tabbedPane, 0, SpringLayout.WEST, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.SOUTH, tabbedPane, 778, SpringLayout.NORTH, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.EAST, tabbedPane, 728, SpringLayout.WEST, frame.getContentPane());
+		frame.getContentPane().add(tabbedPane);
 		
+		// Start our advertisement
+		System.out.println("Now starting Advertisement");
+
+		JPanel adPanel = new Advertisement();
+		springLayout.putConstraint(SpringLayout.SOUTH, adPanel, 732, SpringLayout.SOUTH, welcomeLabel);
+		springLayout.putConstraint(SpringLayout.NORTH, adPanel, 6, SpringLayout.SOUTH, welcomeLabel);
+		springLayout.putConstraint(SpringLayout.WEST, adPanel, 6, SpringLayout.EAST, tabbedPane);
+		springLayout.putConstraint(SpringLayout.EAST, adPanel, 162, SpringLayout.EAST, tabbedPane);
+		frame.getContentPane().add(adPanel);
+		
+		// Move on to something else
+
 		
 		JPanel newMemberRegPanel = new JPanel();
 		tabbedPane.addTab("New Member Registration", null, newMemberRegPanel, null);
@@ -816,5 +843,6 @@ public class LibraryGUI {
 		JScrollPane adminScrollPane = new LibraryAdminPane();		
 	
 		tabbedPane.addTab("Library Admin", null, adminScrollPane, null);
+		
 	}
 }

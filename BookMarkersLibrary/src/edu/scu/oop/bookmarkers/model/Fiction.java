@@ -5,7 +5,8 @@ public final class Fiction extends Books {
 	public static int numOfItems;
 	
 	public Fiction(String title, String author, double itemPrice) {
-		super ("F".concat(title), author, itemPrice);
+		super (title, author, itemPrice);
+		itemID = "F".concat(itemID);
 		numOfItems++;
 	}
 	

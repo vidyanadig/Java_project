@@ -12,7 +12,7 @@ import java.util.Map;
  *
  */
 public abstract class Item implements Serializable{
-	private String itemID;
+	protected String itemID;
 	private String title;
 	private String author;
 	private double itemPrice;
@@ -29,7 +29,7 @@ public abstract class Item implements Serializable{
 	
 	public Item (String title, String author, double itemPrice) {
 		forItemIDOnly++;
-		this.itemID = "I".concat(forItemIDOnly.toString());
+		this.itemID = forItemIDOnly.toString();
 		this.title = title;
 		this.author = author;
 		this.itemPrice = itemPrice;

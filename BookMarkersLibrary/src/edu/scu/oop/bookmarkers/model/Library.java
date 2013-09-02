@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -24,6 +25,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.sun.mail.smtp.SMTPTransport;
+import com.sun.xml.internal.bind.v2.runtime.reflect.ListIterator;
 
 import edu.scu.oop.bookmarkers.db.Serialization;
 import edu.scu.oop.bookmarkers.gui.LibraryGUI;
@@ -138,7 +140,7 @@ public class Library {
 		}
 		// If this is the first Item in this Library
 		if (itemsMap == null) {
-			itemsMap = new HashMap<String, Item> ();
+			itemsMap = new LinkedHashMap<String, Item> ();
 		}
 		/*
 		 * Add the item to the hash map with the itemID as the key if there 
@@ -152,6 +154,25 @@ public class Library {
 			System.out.println("Previous same itemID found, not adding !!");
 		}
 		System.out.println("Yay, added " + title);
+	}
+	
+	public List<Item> getNewestItem () {
+		Iterator<Item> itemIter = itemsMap.values().iterator();
+		List <Item> newPrevItem = new ArrayList <Item>();
+		Item prevItem = null, newItem = null;
+		
+		if (itemIter.hasNext()) {
+			newItem = itemIter.next();
+			prevItem = null;
+		}
+		while (itemIter.hasNext()) {
+			prevItem = newItem;
+			newItem = itemIter.next();
+			
+		}
+		newPrevItem.add(newItem);
+		newPrevItem.add(prevItem);
+		return newPrevItem;
 	}
 	
 	/*
